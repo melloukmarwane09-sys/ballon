@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة كرة القدم</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        #gameCanvas {
+            border: 2px solid #000;
+            background-color: #00cc66;
+            display: block;
+            margin: 20px auto;
+            position: relative;
+        }
+        .control-buttons {
+            margin: 20px;
+        }
+        .control-buttons i {
+            font-size: 30px;
+            cursor: pointer;
+            margin: 15px;
+            color: #333;
+        }
+        .control-buttons .notification-button {
+            color: #ff5722;
+        }
+        .control-buttons .like-button {
+            color: #4caf50;
+        }
+        .control-buttons .profile-button {
+            color: #2196f3;
+        }
+        .control-buttons .policy-button {
+            color: #9c27b0;
+        }
+        .control-buttons .gift-icon {
+            color: #ff9800;
+        }
+        .control-buttons .ad-icon {
+            color: #795548;
+        }
+        .section {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+            display: none;
+            margin: 20px 0;
+        }
+        .section p {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .section input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .section button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .section button:hover {
+            background-color: #0056b3;
+        }
+        #scoreboard {
+            font-size: 20px;
+            margin: 20px;
+        }
+        #scoreboard span {
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>لعبة كرة القدم</h1>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <div class="control-buttons">
+        <i class="fas fa-bell notification-button" id="notification-button" title="الإشعارات"></i>
+        <i class="fas fa-thumbs-up like-button" id="like-button" title="إعجاب"></i>
+        <i class="fas fa-user-circle profile-button" id="profile-button" title="الملف الشخصي"></i>
+        <i class="fas fa-info-circle policy-button" id="policy-button" title="الشروط"></i>
+        <i class="fas fa-gift gift-icon" id="gift-button" title="الهدايا"></i>
+        <i class="fas fa-bullhorn ad-icon" id="ad-button" title="الإعلانات"></i>
+    </div>
+    <div class="section" id="policy-section">
+        <p>سياسات وشروط اللعبة:</p>
+        <p>1. اضرب الكرة نحو المرمى لتسجيل هدف عندما تقوم بتسجيل هدف ارسل لي سكرين شوت في رقم على للعبة ونحن سنقدم لكم هدية 🎁 عبارة عن باقات انترنت او راسلونا على البريد الإلكتروني.</p>
+        <p>2. عند تسجيل هدف، ستظهر إشعارات بالنتائج.</p>
+        <button id="close-policy">إغلاق</button>
+    </div>
+    <div class="section" id="notification-section">
+        <p id="notification-text">لم تسجل أي أهداف بعد.</p>
+        <button id="close-notification">إغلاق</button>
+    </div>
+    <div class="section" id="gift-section">
+        <p>للحصول على هدية، سجل 1 مليون هدف!</p>
+        <p>راسلنا عبر البريد الإلكتروني: suporball@gmail.com</p>
+        <button id="close-gift">إغلاق</button>
+    </div>
+    <div class="section" id="ad-section">
+        <p>شروط الربح:</p>
+        <p>سجل 1 مليون هدف واربح  جوائز قيمة.</p>
+        <button id="close-ad">إغلاق</button>
+    </div>
+    <div class="section" id="profile-section">
+        <p>قم بإنشاء حساب جديد:</p>
+        <input type="text" id="user-name" placeholder="الاسم الكامل">
+        <input type="email" id="user-email" placeholder="البريد الإلكتروني">
+        <button id="save-profile">حفظ الحساب</button>
+        <button id="close-profile">إغلاق</button>
+    </div>
+    <div id="scoreboard">
+        <span id="score">الأهداف: 0</span>
+        <span id="likes">الإعجابات: 0</span>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let ball = { x: 50, y: canvas.height / 2, radius: 15, dx: 0, dy: 0 };
+        let goal = { x: canvas.width - 50, y: canvas.height / 2 - 25, width: 30, height: 50 };
+        let score = 0;
+        let likes = 0;
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+            ctx.closePath();
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+            document.getElementById('score').innerText = `الأهداف: ${score}`;
+            document.getElementById('likes').innerText = `الإعجابات: ${likes}`;
+        }
+
+        function updateGame() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+            if (ball.x + ball.radius > goal.x && ball.x - ball.radius < goal.x + goal.width &&
+                ball.y + ball.radius > goal.y && ball.y - ball.radius < goal.y + goal.height) {
+                score++;
+                ball.x = 50;
+                ball.y = canvas.height / 2;
+                ball.dx = 0;
+                ball.dy = 0;
+                showNotification('تهانينا! سجلت هدفًا!');
+            }
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx *= -1;
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) ball.dy *= -1;
+            drawGame();
+            requestAnimationFrame(updateGame);
+        }
+
+        canvas.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            ball.dx = (touch.clientX - ball.x) / 10;
+            ball.dy = (touch.clientY - ball.y) / 10;
+        });
+
+        document.getElementById('like-button').addEventListener('click', () => {
+            likes++;
+        });
+
+        document.getElementById('policy-button').addEventListener('click', () => {
+            toggleSection('policy-section');
+        });
+
+        document.getElementById('close-policy').addEventListener('click', () => {
+            toggleSection('policy-section');
+        });
+
+        document.getElementById('gift-button').addEventListener('click', () => {
+            toggleSection('gift-section');
+        });
+
+        document.getElementById('close-gift').addEventListener('click', () => {
+            toggleSection('gift-section');
+        });
+
+        document.getElementById('ad-button').addEventListener('click', () => {
+            toggleSection('ad-section');
+        });
+
+        document.getElementById('close-ad').addEventListener('click', () => {
+            toggleSection('ad-section');
+        });
+
+        document.getElementById('profile-button').addEventListener('click', () => {
+            toggleSection('profile-section');
+        });
+
+        document.getElementById('close-profile').addEventListener('click', () => {
+            toggleSection('profile-section');
+        });
+
+        document.getElementById('save-profile').addEventListener('click', () => {
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            if (name && email) {
+                alert(`تم إنشاء حسابك بنجاح!\nالاسم: ${name}\nالبريد الإلكتروني: ${email}`);
+                toggleSection('profile-section');
+            } else {
+                alert('يرجى إدخال جميع البيانات!');
+            }
+        });
+
+        function showNotification(message) {
+            document.getElementById('notification-text').innerText = message;
+            toggleSection('notification-section');
+        }
+
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.style.display = section.style.display === 'block' ? 'none' : 'block';
+        }
+
+        updateGame();
+    </script>
+</body>
+</html>
